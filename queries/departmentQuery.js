@@ -10,11 +10,11 @@ const connection = mysql.createConnection(
     console.log('Connected to the employee_db database')
 );
 
-const queries = {
-    viewDepartments: 'SELECT * FROM department',
-    viewRoles: 'SELECT * FROM role',
-    viewEmployees: 'SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id;'
-}
+// const queries = {
+//     viewDepartments: 'SELECT * FROM department',
+//     viewRoles: 'SELECT * FROM role',
+//     viewEmployees: 'SELECT * FROM employee INNER JOIN role ON employee.role_id = role.id;'
+// }
 
 const db = connection.promise();
 
