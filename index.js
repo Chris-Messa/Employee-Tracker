@@ -1,7 +1,6 @@
 const db = require("./queries/departmentQuery");
 const consoleTable = require("console.table");
 const inquirer = require("inquirer");
-const questions = require("./utils/questions");
 const fetchData = require("./utils/questions");
 let isView = false;
 fetchData().then(questions => {
@@ -38,13 +37,27 @@ inquirer
         sql = `INSERT INTO department(name) VALUES("${response.name}");`;
         break;
       case "Add a role":
-        sql = `INSERT INTO role(title, salary) VALUES("${response.title}", ${response.salary});`;
-        break;
+        const departmentQuery = `SELECT id AS departmentId FROM department WHERE name = "${response.roleDepartment}"`;
+
+        return db.query(departmentQuery)
+          .then((result) => {
+            const departmentId = result[0][0].departmentId;
+      
+            sql = `INSERT INTO role(title, salary, department_id) VALUES("${response.title}", ${response.salary}, ${departmentId})`;
+            return db.query(sql);
+          })
+          .then(() => {
+            console.log("Role added successfully");
+          })
+          .catch((error) => {
+            console.error("Error adding role:", error);
+          });
       case "Add an employee":
         sql = `SELECT role.id AS roleId, (SELECT id FROM employee WHERE CONCAT(first_name, ' ', last_name) = "${response.managerName}") AS managerId
         FROM role
         WHERE role.title = "${response.roleName}";`;
-        return db.query(sql).then((result) => {
+        return db.query(sql)
+        .then((result) => {
           const roleId = result[0][0].roleId;
           const managerId = result[0][0].managerId;
           sql = `INSERT INTO employee (role_id, manager_id, first_name, last_name) 
@@ -74,14 +87,25 @@ inquirer
         FROM employee
         INNER JOIN role ON employee.role_id = role.id
         INNER JOIN department ON role.department_id = department.id
-        WHERE department.name = "${response.name}";`;
+        WHERE department.name = "${response.departmentName}";`;
         isView = true;
         break;
+      case "Delete department":
+        sql = `DELETE FROM department 
+               WHERE department.name = "${response.departmentName}"`
+        break;
+      case "Delete role":
+        sql = `DELETE FROM role 
+               WHERE role.title = "${response.roleTitle}"`
+        break;
+      case "Delete employee":
+        sql = `DELETE FROM employee 
+               WHERE CONCAT(first_name, ' ', last_name) = ?`;
+               return db.query(sql, [response.employeeName]);
     }
     return db.query(sql);
   })
   .then((result) => {
-    console.table(result);
     if (isView) {
       let table;
       table = result[0];

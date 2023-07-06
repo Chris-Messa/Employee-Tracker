@@ -13,7 +13,10 @@ const fetchData = async () =>  {
       roles = roles[0].map(role => role.title);
       departments = await db.query(`SELECT name FROM department`);
       departments = departments[0].map(department => department.name);
-      managers = await db.query(`SELECT CONCAT(first_name, ' ', last_name) AS name FROM employee WHERE manager_id IS `);  
+      managers = await db.query(`SELECT CONCAT(first_name, ' ', last_name) 
+                                 AS name 
+                                 FROM employee 
+                                 WHERE id IN (SELECT manager_id FROM employee WHERE manager_id IS NOT NULL)`);  
     } catch (error) {
       console.error(error);
     }
@@ -101,7 +104,57 @@ const fetchData = async () =>  {
         choices: [...roles],
         message: "Which role would you like to update to?",
         when: (response) => response.options === "Update employee role"
-       }
+       },
+       {
+        type: "list",
+        name: "employeeToChangeManagement",
+        choices: [...names],
+        message: "Which employee's manager would you like to update?",
+        when: (response) => response.options === "Update employee manager"
+       },
+       {
+        type: "list",
+        name: "managerName",
+        choices: [...managers],
+        message: "Who is the employee's new manager?",
+        when: (response) => response.options === "Update employee manager"
+       },
+       {
+        type: "list",
+        name: "managerName",
+        message: "Which manager's employees would you like to view?",
+        choices: [...managers],  
+        when: (response) => response.options === "View employees by manager"
+      },
+      {
+        type: "list",
+        name: "departmentName",
+        message: "Which department's employees would you like to view?",
+        choices: [...departments],
+        when: (response) => response.options === "View employees by department"
+      },
+      {
+        type: "list",
+        name: "departmentName",
+        message: "Which department would you like to delete?",
+        choices: [...departments],
+        when: (response) => response.options === "Delete department"
+      },
+      {
+        type: "list",
+        name: "roleTitle",
+        message: "Which role would you like to delete?",
+        choices: [...roles],
+        when: (response) => response.options === "Delete role"
+      },
+      {
+        type: "list",
+        name: "employeeName",
+        message: "Which employee would you like to delete?",
+        choices: [...names],
+        when: (response) => response.options === "Delete employee"
+      },
+      
      ];
  return questions;
 }
